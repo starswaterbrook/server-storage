@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload new File</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='styles.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="container">
+        <h1>Hello, {{username}}</h1>
+        <h2>Upload or download a file</h2>
+        {% for mesg in get_flashed_messages() %}
+        <h4>{{ mesg }}</h4>
+        {% endfor %}
+        <form method=post enctype=multipart/form-data>
+            <input type=file name=file>
+            <input type=submit value=Upload>
+        </form>
+        <div id="files-container">
+            {%for f in files%}
+            <div class="file">
+                <form action="{{ url_for('delete', filename=f) }}" method="POST">
+                    <button type="submit">X</button>
+                    <a href="{{url_for('download', filename=f)}}">{{f.split('_', 1)[1]}}</a>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        <form action="{{ url_for('logout') }}" method="GET">
+            <button type="submit">Log Out</button>
+        </form>
+    </div>
+</body>
+</html>
