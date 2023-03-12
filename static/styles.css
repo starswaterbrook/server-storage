@@ -1,0 +1,32 @@
+body{
+    display: flex;
+    font-family: 'Lato', sans-serif;
+    color: #1f1f1f;
+    margin: 0 auto;
+    padding: 0 30px;
+    background-color: #786ddd;
+}
+
+#container{
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 0 30px;
+    text-align: center;
+}
+
+
+#files-container{
+    display: block;
+    max-width: 1800px;
+    margin: 15px;
+    padding: 0 30px;
+    text-align: left;
+}
+
+.file{
+    display: block;
+    width: auto;
+    margin: 0 auto;
+    padding: 3px;
+    text-align: left;
+}
