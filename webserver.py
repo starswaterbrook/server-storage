@@ -12,18 +12,18 @@ from werkzeug.utils import secure_filename
 from flask_socketio import SocketIO
 import time
 
-UPLOAD_DIR = './files/'
+UPLOAD_DIR = "./files/"
 
 app = Flask(__name__)
 socketio = SocketIO(app)
 
-load_dotenv('secret.env')
+load_dotenv("secret.env")
 app.secret_key = os.getenv("APP_SECRET")
-app.config['SESSION_COOKIE_NAME'] = 'google-login-session'
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5)
-app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///user.db'
+app.config["SESSION_COOKIE_NAME"] = "google-login-session"
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=5)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///user.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config['UPLOAD_FOLDER'] = UPLOAD_DIR
+app.config["UPLOAD_FOLDER"] = UPLOAD_DIR
 
 
 db = SQLAlchemy(app)
@@ -75,7 +75,7 @@ google = oauth.register(
     jwks_uri= "https://www.googleapis.com/oauth2/v3/certs"
 )
 
-@app.route('/delete/<filename>', methods=['POST'])
+@app.route("/delete/<filename>", methods=["POST"])
 @login_required
 def delete(filename):
     file = File.query.filter(File.file_name == filename).first()
@@ -90,10 +90,10 @@ def delete(filename):
         return {"Response":"An error occured, try again later"}
     return redirect("/")
     
-@app.route('/download/<filename>', methods=['GET'])
+@app.route("/download/<filename>", methods=["GET"])
 @login_required
 def download(filename):
-    path = os.path.join(app.config["UPLOAD_FOLDER"], session['id'], filename)
+    path = os.path.join(app.config["UPLOAD_FOLDER"], session["id"], filename)
     try:
         if File.query.filter(File.file_name == filename).first().user_id == session["id"]:
             return send_file(path, as_attachment=True)
@@ -102,20 +102,20 @@ def download(filename):
     except KeyError:
         return "An error occured, try again later"
 
-@app.route("/", methods=['GET', 'POST'])
+@app.route("/", methods=["GET", "POST"])
 @login_required
 def home():
     data = File.query.filter(File.user_id == session["id"]).all()
     f_list = [d.file_name for d in data]
-    if request.method == 'POST':
+    if request.method == "POST":
         try: 
-            file = request.files['file']
+            file = request.files["file"]
         except KeyError:
-            flash('No file part')
+            flash("No file part")
             return redirect(request.url)
         
         if file.filename == '':
-            flash('No selected file')
+            flash("No selected file")
             return redirect(request.url)
         
         if file and allowed_ext(file.filename):
@@ -191,7 +191,7 @@ def authorize():
 def logout():
     for key in list(session.keys()):
         session.pop(key)
-    return redirect('/')
+    return redirect("/")
 
 if __name__ == "__main__":
     if not os.path.isdir(UPLOAD_DIR):

@@ -34,6 +34,7 @@ body{
 #progress {
     display: none;
     width: 100%;
+    margin-bottom: 5px;
     background-color: #ccc;
 }
   
@@ -44,5 +45,8 @@ body{
 }
 
 #text-progress {
+    margin: 0 auto;
+    margin-bottom: 5px;
+    padding: 2px 0px 5px 0px;
     display: none;
 }
