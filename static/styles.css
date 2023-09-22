@@ -42,3 +42,7 @@ body{
     height: 30px;
     background-color: #4caf50;
 }
+
+#text-progress {
+    display: none;
+}

@@ -12,5 +12,5 @@ def login_required(f):
 
 def allowed_ext(filename):
     file_ext = filename.rsplit('.', 1)[1].lower()
-    ALLOWED_EXTENSIONS = ["txt", "pdf", "png", "jpg", "jpeg", "gif", "mp3", "mp4","exe", "mkv"]
+    ALLOWED_EXTENSIONS = ["txt" ,"pdf" ,"png" ,"jpg" ,"jpeg" ,"gif" ,"mp3" ,"mp4" , "exe", "mkv"]
     return file_ext in ALLOWED_EXTENSIONS

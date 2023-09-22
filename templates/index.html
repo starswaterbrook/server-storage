@@ -19,9 +19,13 @@
         {% for mesg in get_flashed_messages() %}
         <h4>{{ mesg }}</h4>
         {% endfor %}
-        <div id="progress">
-            <div id="bar"></div>
+        <div id="info">
+            <p id="text-progress">initializing..</p>
+            <div id="progress">
+                <div id="bar"></div>
+            </div>
         </div>
+
         <form id="file-form" method=post enctype=multipart/form-data>
             <input id="file-field" type=file name=file>
             <input type=submit value=Upload>

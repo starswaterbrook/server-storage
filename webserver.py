@@ -10,6 +10,7 @@ import os
 from werkzeug.utils import secure_filename
 
 from flask_socketio import SocketIO
+import time
 
 UPLOAD_DIR = './files/'
 
@@ -135,20 +136,19 @@ def home():
             total_size = int(request.headers['Content-Length'])
             uploaded_size = 0
             path = os.path.join(app.config['UPLOAD_FOLDER'],session['id'], filename)
-            increment = 3
+            last_update_time = time.time()
             with open(path, 'wb') as f:
                 while True:
                     chunk = file.read(chunk_size)
                     if not chunk:
                         break
                     uploaded_size += len(chunk)
-                    progress = (uploaded_size / total_size) * 100
-                    #print(f"{uploaded_size}/{total_size}")
-                    if progress >= increment:
-                        socketio.emit('upload-progress', progress)
-                        increment += 10
+                    current_time = time.time()
+                    if current_time - last_update_time >= 0.25:
+                        socketio.emit('upload-progress', {'uploaded':uploaded_size,'total':total_size})
+                        last_update_time = current_time
                     f.write(chunk)
-            socketio.emit('upload-progress', 100)
+            socketio.emit('upload-progress', {'uploaded':total_size,'total':total_size})
             socketio.emit('upload-done')
 
             if not os.path.isfile(path):
