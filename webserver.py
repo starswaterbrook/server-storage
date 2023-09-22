@@ -1,4 +1,4 @@
-from flask import Flask, url_for, redirect, session, render_template, request, send_from_directory, flash, send_file
+from flask import Flask, url_for, redirect, session, render_template, request, flash, send_file
 from authlib.integrations.flask_client import OAuth
 
 from dotenv import load_dotenv
@@ -23,6 +23,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_DIR
 
 db = SQLAlchemy(app)
 
+# DB Model
 #--------------------------------------------------------------------------
 
 class User(db.Model):
@@ -49,8 +50,8 @@ class File(db.Model):
         self.user_id = user_id
 
     @classmethod
-    def in_database(cls, n):
-        f = File.query.filter_by(file_name=n).first()
+    def in_database(cls, n, id):
+        f = File.query.filter_by(user_id=id, file_name=n).first()
         return f is not None
 
 #--------------------------------------------------------------------------
@@ -117,12 +118,12 @@ def home():
             if len(filename) > 120:
                 flash("File name too long")
                 return redirect(request.url)
-            if not File.query.filter(File.user_id == session["id"], File.file_name == filename).first():
+            if not File.in_database(filename,session["id"]):
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'],session['id'], filename))
                 file_record = File(filename, session["id"])
             else:
                 new_name = filename
-                while File.query.filter(File.user_id == session["id"], File.file_name == new_name).first():
+                while File.in_database(new_name,session["id"]):
                     split_fname = new_name.split(".")
                     new_name = split_fname[0] + "(copy)." + split_fname[1]
                 if len(filename) > 120:
@@ -134,7 +135,7 @@ def home():
             db.session.commit()
             return redirect(url_for('home'))
         elif file:
-            flash('Unallowed file extension')
+            flash('Disallowed file extension')
             return redirect(request.url)
     
     return render_template("index.html", username=session["name"], files=f_list)
