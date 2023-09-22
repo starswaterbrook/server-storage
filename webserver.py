@@ -9,9 +9,13 @@ from datetime import timedelta
 import os
 from werkzeug.utils import secure_filename
 
+from flask_socketio import SocketIO
+
 UPLOAD_DIR = './files/'
 
 app = Flask(__name__)
+socketio = SocketIO(app)
+
 load_dotenv('secret.env')
 app.secret_key = os.getenv("APP_SECRET")
 app.config['SESSION_COOKIE_NAME'] = 'google-login-session'
@@ -119,7 +123,30 @@ def home():
                 flash("File name too long")
                 return redirect(request.url)
             if not File.in_database(filename,session["id"]):
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'],session['id'], filename))
+                #file.save(os.path.join(app.config['UPLOAD_FOLDER'],session['id'], filename))
+                #file_record = File(filename, session["id"])
+                chunk_size = 1024
+                total_size = int(request.headers['Content-Length'])
+                uploaded_size = 0
+                path = os.path.join(app.config['UPLOAD_FOLDER'],session['id'], filename)
+                increment = 1
+                with open(path, 'wb') as f:
+                    while True:
+                        chunk = file.read(chunk_size)
+                        if not chunk:
+                            break
+                        uploaded_size += len(chunk)
+                        progress = (uploaded_size / total_size) * 100
+                        #print(f"{uploaded_size}/{total_size}")
+                        if progress >= increment:
+                            socketio.emit('upload-progress', progress)
+                            increment += 10
+                        f.write(chunk)
+                socketio.emit('upload-progress', 100)
+                socketio.emit('upload-done')
+                if not os.path.isfile(path):
+                    flash("Error uploading the file")
+                    return redirect(request.url)
                 file_record = File(filename, session["id"])
             else:
                 new_name = filename

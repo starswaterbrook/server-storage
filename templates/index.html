@@ -17,8 +17,11 @@
         {% for mesg in get_flashed_messages() %}
         <h4>{{ mesg }}</h4>
         {% endfor %}
-        <form method=post enctype=multipart/form-data>
-            <input type=file name=file>
+        <div id="progress">
+            <div id="bar"></div>
+        </div>
+        <form id="file-form" method=post enctype=multipart/form-data>
+            <input id="file-field" type=file name=file>
             <input type=submit value=Upload>
         </form>
         <div id="files-container">
@@ -35,5 +38,7 @@
             <button type="submit">Log Out</button>
         </form>
     </div>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
+    <script src="./static/script.js"></script>
 </body>
 </html>
