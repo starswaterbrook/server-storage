@@ -1,3 +1,12 @@
+function convertBytes(n){
+  const units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+  let l = 0
+  while(n >= 1024 && ++l){
+      n = n/1024;
+  }
+  return(n.toFixed(n < 10 && l > 0 ? 1 : 0) + ' ' + units[l]);
+}
+
 document.addEventListener("DOMContentLoaded", (e) => {
   const socket = io();
 
@@ -7,9 +16,10 @@ document.addEventListener("DOMContentLoaded", (e) => {
   const textProgress = document.querySelector('#text-progress');
   const fileInput = document.querySelector('#file-field');
 
+
   socket.on("upload-progress", (data) => {
     progressBar.style.width = `${(data["uploaded"] / data["total"]) * 100}%`;
-    textProgress.innerHTML = `${data["uploaded"]} / ${data["total"]}`;
+    textProgress.innerHTML = `${convertBytes(data["uploaded"])} / ${convertBytes(data["total"])}`;
   });
 
   socket.on("upload-done", () => {
