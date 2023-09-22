@@ -122,33 +122,7 @@ def home():
             if len(filename) > 120:
                 flash("File name too long")
                 return redirect(request.url)
-            if not File.in_database(filename,session["id"]):
-                #file.save(os.path.join(app.config['UPLOAD_FOLDER'],session['id'], filename))
-                #file_record = File(filename, session["id"])
-                chunk_size = 1024
-                total_size = int(request.headers['Content-Length'])
-                uploaded_size = 0
-                path = os.path.join(app.config['UPLOAD_FOLDER'],session['id'], filename)
-                increment = 1
-                with open(path, 'wb') as f:
-                    while True:
-                        chunk = file.read(chunk_size)
-                        if not chunk:
-                            break
-                        uploaded_size += len(chunk)
-                        progress = (uploaded_size / total_size) * 100
-                        #print(f"{uploaded_size}/{total_size}")
-                        if progress >= increment:
-                            socketio.emit('upload-progress', progress)
-                            increment += 10
-                        f.write(chunk)
-                socketio.emit('upload-progress', 100)
-                socketio.emit('upload-done')
-                if not os.path.isfile(path):
-                    flash("Error uploading the file")
-                    return redirect(request.url)
-                file_record = File(filename, session["id"])
-            else:
+            if File.in_database(filename,session["id"]):
                 new_name = filename
                 while File.in_database(new_name,session["id"]):
                     split_fname = new_name.split(".")
@@ -156,8 +130,31 @@ def home():
                 if len(filename) > 120:
                     flash("File name too long")
                     return redirect(request.url)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'],session['id'], new_name))
-                file_record = File(new_name, session["id"])
+                filename = new_name
+            chunk_size = 1024
+            total_size = int(request.headers['Content-Length'])
+            uploaded_size = 0
+            path = os.path.join(app.config['UPLOAD_FOLDER'],session['id'], filename)
+            increment = 3
+            with open(path, 'wb') as f:
+                while True:
+                    chunk = file.read(chunk_size)
+                    if not chunk:
+                        break
+                    uploaded_size += len(chunk)
+                    progress = (uploaded_size / total_size) * 100
+                    #print(f"{uploaded_size}/{total_size}")
+                    if progress >= increment:
+                        socketio.emit('upload-progress', progress)
+                        increment += 10
+                    f.write(chunk)
+            socketio.emit('upload-progress', 100)
+            socketio.emit('upload-done')
+
+            if not os.path.isfile(path):
+                flash("Error uploading the file")
+                return redirect(request.url)
+            file_record = File(filename, session["id"])
             db.session.add(file_record)
             db.session.commit()
             return redirect(url_for('home'))
