@@ -9,17 +9,21 @@ from datetime import timedelta
 import os
 from werkzeug.utils import secure_filename
 
-UPLOAD_DIR = './files/'
+from flask_socketio import SocketIO
+import time
+
+UPLOAD_DIR = "./files/"
 
 app = Flask(__name__)
-load_dotenv('secret.env')
-app.secret_key = os.getenv("APP_SECRET")
-app.config['SESSION_COOKIE_NAME'] = 'google-login-session'
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5)
-app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///user.db'
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config['UPLOAD_FOLDER'] = UPLOAD_DIR
+socketio = SocketIO(app)
 
+load_dotenv("secret.env")
+app.secret_key = os.getenv("APP_SECRET")
+app.config["SESSION_COOKIE_NAME"] = "google-login-session"
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=5)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///user.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["UPLOAD_FOLDER"] = UPLOAD_DIR
 
 db = SQLAlchemy(app)
 
@@ -66,11 +70,11 @@ google = oauth.register(
     authorize_params=None,
     api_base_url='https://www.googleapis.com/oauth2/v1/',
     userinfo_endpoint='https://openidconnect.googleapis.com/v1/userinfo',
-    client_kwargs={'scope': 'openid profile'},
+    client_kwargs={'scope': 'openid profile', 'prompt': 'select_account'},
     jwks_uri= "https://www.googleapis.com/oauth2/v3/certs"
 )
 
-@app.route('/delete/<filename>', methods=['POST'])
+@app.route("/delete/<filename>", methods=["POST"])
 @login_required
 def delete(filename):
     file = File.query.filter(File.file_name == filename).first()
@@ -85,10 +89,10 @@ def delete(filename):
         return {"Response":"An error occured, try again later"}
     return redirect("/")
     
-@app.route('/download/<filename>', methods=['GET'])
+@app.route("/download/<filename>", methods=["GET"])
 @login_required
 def download(filename):
-    path = os.path.join(app.config["UPLOAD_FOLDER"], session['id'], filename)
+    path = os.path.join(app.config["UPLOAD_FOLDER"], session["id"], filename)
     try:
         if File.query.filter(File.file_name == filename).first().user_id == session["id"]:
             return send_file(path, as_attachment=True)
@@ -97,20 +101,20 @@ def download(filename):
     except KeyError:
         return "An error occured, try again later"
 
-@app.route("/", methods=['GET', 'POST'])
+@app.route("/", methods=["GET", "POST"])
 @login_required
 def home():
     data = File.query.filter(File.user_id == session["id"]).all()
     f_list = [d.file_name for d in data]
-    if request.method == 'POST':
+    if request.method == "POST":
         try: 
-            file = request.files['file']
+            file = request.files["file"]
         except KeyError:
-            flash('No file part')
+            flash("No file part")
             return redirect(request.url)
         
         if file.filename == '':
-            flash('No selected file')
+            flash("No selected file")
             return redirect(request.url)
         
         if file and allowed_ext(file.filename):
@@ -118,10 +122,7 @@ def home():
             if len(filename) > 120:
                 flash("File name too long")
                 return redirect(request.url)
-            if not File.in_database(filename,session["id"]):
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'],session['id'], filename))
-                file_record = File(filename, session["id"])
-            else:
+            if File.in_database(filename,session["id"]):
                 new_name = filename
                 while File.in_database(new_name,session["id"]):
                     split_fname = new_name.split(".")
@@ -129,8 +130,30 @@ def home():
                 if len(filename) > 120:
                     flash("File name too long")
                     return redirect(request.url)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'],session['id'], new_name))
-                file_record = File(new_name, session["id"])
+                filename = new_name
+            chunk_size = 1024
+            total_size = int(request.headers['Content-Length'])
+            uploaded_size = 0
+            path = os.path.join(app.config['UPLOAD_FOLDER'],session['id'], filename)
+            last_update_time = time.time()
+            with open(path, 'wb') as f:
+                while True:
+                    chunk = file.read(chunk_size)
+                    if not chunk:
+                        break
+                    uploaded_size += len(chunk)
+                    current_time = time.time()
+                    if current_time - last_update_time >= 0.25:
+                        socketio.emit('upload-progress', {'uploaded':uploaded_size,'total':total_size})
+                        last_update_time = current_time
+                    f.write(chunk)
+            socketio.emit('upload-progress', {'uploaded':total_size,'total':total_size})
+            socketio.emit('upload-done')
+
+            if not os.path.isfile(path):
+                flash("Error uploading the file")
+                return redirect(request.url)
+            file_record = File(filename, session["id"])
             db.session.add(file_record)
             db.session.commit()
             return redirect(url_for('home'))
@@ -165,8 +188,7 @@ def authorize():
 @login_required
 @app.route("/logout")
 def logout():
-    for key in list(session.keys()):
-        session.pop(key)
+    session.clear()
     return redirect('/')
 
 if __name__ == "__main__":

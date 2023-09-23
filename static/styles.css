@@ -29,4 +29,27 @@ body{
     margin: 0 auto;
     padding: 3px;
     text-align: left;
+<<<<<<< HEAD
+=======
+}
+
+#progress {
+    display: none;
+    width: 100%;
+    margin-bottom: 5px;
+    background-color: #ccc;
+}
+  
+#bar {
+    width: 0;
+    height: 30px;
+    background-color: #4caf50;
+}
+
+#text-progress {
+    margin: 0 auto;
+    margin-bottom: 5px;
+    padding: 2px 0px 5px 0px;
+    display: none;
+>>>>>>> experimental
 }

@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
+    <script src="./static/script.js"></script>
 </head>
 <body>
     <div id="container">
@@ -17,8 +19,15 @@
         {% for mesg in get_flashed_messages() %}
         <h4>{{ mesg }}</h4>
         {% endfor %}
-        <form method=post enctype=multipart/form-data>
-            <input type=file name=file>
+        <div id="info">
+            <p id="text-progress">initializing..</p>
+            <div id="progress">
+                <div id="bar"></div>
+            </div>
+        </div>
+
+        <form id="file-form" method=post enctype=multipart/form-data>
+            <input id="file-field" type=file name=file>
             <input type=submit value=Upload>
         </form>
         <div id="files-container">
@@ -26,7 +35,13 @@
             <div class="file">
                 <form action="{{ url_for('delete', filename=f) }}" method="POST">
                     <button type="submit">X</button>
-                    <a href="{{url_for('download', filename=f)}}">{{f}}</a>
+                    <a href="{{url_for('download', filename=f)}}">
+                        {% if f|length > 30 %}
+                            {{f.split('.')[0][:30] + "... ." + f.split('.')[1]}}
+                        {% else %}
+                            {{ f }}
+                        {% endif %}
+                    </a>
                 </form>
             </div>
             {% endfor %}
