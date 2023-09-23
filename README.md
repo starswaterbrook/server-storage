@@ -1,2 +1,4 @@
-# server_storage
-A little file hosting server using OAuth, user data is NOT encrypted (on purpose, just a mock project)
+# Server Cloud Storage    
+A legacy branch that simplifies the file upload (not in chunks, no progress bar, doesn't allow duplicates)    
+        
+A good barebones base for experimenting      
