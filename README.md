@@ -88,8 +88,9 @@ or its design in a production enviroment. For now, it is a _mock project_ lackin
 
 That much to say, with some GUI changes, it might serve as a great self-hosted home cloud or even (with some modification) a private over-the-internet cloud.   
     
-Suggested improvements will be listed in the <a href="https://github.com/mwkm00/server-storage/issues">Issues</a> tab.
-
+Suggested improvements will be listed in the <a href="https://github.com/mwkm00/server-storage/issues">Issues</a> tab.       
+    
+For a very basic implementation, check out the <a href="https://github.com/mwkm00/server-storage/tree/legacy">Legacy branch</a>    
 
 ## Showcase
   <a>
