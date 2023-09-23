@@ -97,6 +97,27 @@ For a very basic implementation, check out the <a href="https://github.com/mwkm0
     <img src="./misc/showcase.gif" alt="icon" width="500" height="500">
   </a>
 
+## Contributing
+I would love for this project to become a playground for trying out and learning new things, so
+contributions are very welcome!   
+How you can contribute:   
+
+1. Find or <a href="https://github.com/mwkm00/server-storage/issues">file an issue</a> you'd like to address. Please try to keep issues reasonably small, focusing on one aspect.
+
+2. Create a new branch:
+   ```sh
+   git checkout -b your-fork-name
+   ```
+3. Make some changes and commit them to the branch:
+   ```sh
+   git commit --signoff -m 'changes description'
+   ```
+4. Push the branch to your fork on GitHub:
+   ```sh
+   git push origin your-fork-name
+   ```  
+5. Make a pull request on GitHub to the <a href="https://github.com/mwkm00/server-storage/tree/experimental"><strong>experimental</strong></a> branch. Make sure to **#** the issue you are addresing
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## License
