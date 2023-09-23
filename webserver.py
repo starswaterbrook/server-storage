@@ -71,7 +71,7 @@ google = oauth.register(
     authorize_params=None,
     api_base_url='https://www.googleapis.com/oauth2/v1/',
     userinfo_endpoint='https://openidconnect.googleapis.com/v1/userinfo',
-    client_kwargs={'scope': 'openid profile'},
+    client_kwargs={'scope': 'openid profile', 'prompt': 'select_account'},
     jwks_uri= "https://www.googleapis.com/oauth2/v3/certs"
 )
 
@@ -189,9 +189,8 @@ def authorize():
 @login_required
 @app.route("/logout")
 def logout():
-    for key in list(session.keys()):
-        session.pop(key)
-    return redirect("/")
+    session.clear()
+    return redirect('/')
 
 if __name__ == "__main__":
     if not os.path.isdir(UPLOAD_DIR):
