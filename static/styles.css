@@ -29,6 +29,8 @@ body{
     margin: 0 auto;
     padding: 3px;
     text-align: left;
+<<<<<<< HEAD
+=======
 }
 
 #progress {
@@ -49,4 +51,5 @@ body{
     margin-bottom: 5px;
     padding: 2px 0px 5px 0px;
     display: none;
+>>>>>>> experimental
 }
