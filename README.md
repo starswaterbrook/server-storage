@@ -116,7 +116,14 @@ How you can contribute:
    ```sh
    git push origin your-fork-name
    ```  
-5. Make a pull request on GitHub to the <a href="https://github.com/mwkm00/server-storage/tree/experimental"><strong>experimental</strong></a> branch. Make sure to **#** the issue you are addresing
+5. Test your app:   
+   ```sh
+   pytest
+   ```  
+   Note, that currently implemented tests are **very** basic, for major restructuring they will
+   require changes.    
+
+6. Make a pull request on GitHub to the <a href="https://github.com/mwkm00/server-storage/tree/experimental"><strong>experimental</strong></a> branch. Make sure to **#** the issue you are addresing
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
