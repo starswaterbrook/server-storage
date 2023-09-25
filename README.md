@@ -121,8 +121,8 @@ How you can contribute:
    pytest
    ```  
    Note, that currently implemented tests are **very** basic, for major restructuring they will
-   require changes.
-   Check the formatting:
+   require changes.   
+   Check the formatting:   
    ```sh
    black --check .
    ```  
