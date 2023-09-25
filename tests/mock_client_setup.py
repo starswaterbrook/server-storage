@@ -4,7 +4,7 @@ import sys
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 sys.path.insert(0, parent_dir)
-from webserver import app, db, User, File
+from app import app, db, User, File
 import uuid
 
 script_directory = os.path.dirname(__file__)
