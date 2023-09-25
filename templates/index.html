@@ -17,7 +17,7 @@
         <h1>Hello, {{username}}</h1>
         <h2>Upload or download a file</h2>
         {% for mesg in get_flashed_messages() %}
-        <h4>{{ mesg }}</h4>
+        <h4 id="flashed-message">{{ mesg }}</h4>
         {% endfor %}
         <div id="info">
             <p id="text-progress">initializing..</p>

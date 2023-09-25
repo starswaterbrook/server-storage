@@ -2,11 +2,15 @@ import pytest
 import os
 import sys
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
 sys.path.insert(0, parent_dir)
 from webserver import app, db, User, File
 import uuid
 
-UPLOAD_DIR = './tests/files'
+script_directory = os.path.dirname(__file__)
+os.chdir(script_directory)
+
+UPLOAD_DIR = os.path.abspath('./test_files')
 TEST_FILE_NAME = 'testfile.txt'
 TEST_FILE_DIR = f'{UPLOAD_DIR}/{TEST_FILE_NAME}'
 
@@ -24,7 +28,7 @@ def client():
             user_id = str(uuid.uuid4())
             db.create_all()
             user = User(user_id , 'test')
-            file = File(TEST_FILE_NAME, user_id)      
+            file = File(TEST_FILE_NAME, user_id)
             os.mkdir(f"{UPLOAD_DIR}/{user_id}")
             db.session.add(user)
             db.session.add(file)

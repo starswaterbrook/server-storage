@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", (e) => {
   const progressItem = document.querySelector('#progress');
   const textProgress = document.querySelector('#text-progress');
   const fileInput = document.querySelector('#file-field');
-
+  const flashedMessage = document.querySelector('#flashed-message');
 
   socket.on("upload-progress", (data) => {
     progressBar.style.width = `${(data["uploaded"] / data["total"]) * 100}%`;
@@ -26,11 +26,19 @@ document.addEventListener("DOMContentLoaded", (e) => {
     window.location.href = ""
   });
 
+  socket.on("upload-fail", () => {
+    window.location.href = ""
+  });
+
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     if (fileInput.files.length === 0)
     {
       return;
+    }
+    if (flashedMessage)
+    {
+      flashedMessage.style.display = "none";
     }
 
     progressItem.style.display = "flex";

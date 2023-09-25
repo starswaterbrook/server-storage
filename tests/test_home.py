@@ -3,8 +3,8 @@ import sys
 import shutil
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, parent_dir)
-from webserver import app, File
-from Client import client, UPLOAD_DIR
+from app import app, File
+from mock_client_setup import client, UPLOAD_DIR
 
 def test_home(client):
     with client.session_transaction() as session:
