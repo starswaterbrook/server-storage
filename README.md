@@ -121,9 +121,13 @@ How you can contribute:
    pytest
    ```  
    Note, that currently implemented tests are **very** basic, for major restructuring they will
-   require changes.    
+   require changes.
+   Check the formatting:
+   ```sh
+   black --check .
+   ```  
 
-6. Make a pull request on GitHub to the <a href="https://github.com/mwkm00/server-storage/tree/experimental"><strong>experimental</strong></a> branch. Make sure to **#** the issue you are addresing
+7. Make a pull request on GitHub to the <a href="https://github.com/mwkm00/server-storage/tree/experimental"><strong>experimental</strong></a> branch. Make sure to **#** the issue you are addresing
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
