@@ -1,8 +1,10 @@
 from datetime import timedelta
 from dotenv import load_dotenv
 import os
+
 UPLOAD_DIR = "./files/"
 load_dotenv("secret.env")
+
 
 class Config:
     SECRET_KEY = os.getenv("APP_SECRET")

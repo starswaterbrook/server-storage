@@ -1,4 +1,14 @@
-from flask import Flask, url_for, redirect, session, render_template, request, flash, send_file, abort
+from flask import (
+    Flask,
+    url_for,
+    redirect,
+    session,
+    render_template,
+    request,
+    flash,
+    send_file,
+    abort,
+)
 from flask_socketio import SocketIO
 
 from oauth_config import oauth
@@ -18,27 +28,33 @@ app.config.from_object(Config)
 db.init_app(app)
 oauth.init_app(app)
 
+
 @app.route("/delete/<filename>", methods=["POST"])
 @login_required
 def delete(filename):
-    file = File.query.filter(File.file_name == filename, File.user_id == session["id"]).first()
+    file = File.query.filter(
+        File.file_name == filename, File.user_id == session["id"]
+    ).first()
     if not file:
         abort(404)
     try:
-        os.remove(os.path.join(app.config["UPLOAD_FOLDER"],session["id"],filename))
-        db.session.delete(file) 
+        os.remove(os.path.join(app.config["UPLOAD_FOLDER"], session["id"], filename))
+        db.session.delete(file)
         db.session.commit()
         flash("File deleted successfully")
     except Exception:
         abort(500)
     return redirect("/")
-    
+
+
 @app.route("/download/<filename>", methods=["GET"])
 @login_required
 def download(filename):
     path = os.path.join(app.config["UPLOAD_FOLDER"], session["id"], filename)
     file_exists = os.path.isfile(path)
-    db_file = File.query.filter(File.file_name == filename, File.user_id == session["id"]).first()
+    db_file = File.query.filter(
+        File.file_name == filename, File.user_id == session["id"]
+    ).first()
     try:
         if db_file and file_exists:
             return send_file(path, as_attachment=True)
@@ -49,49 +65,50 @@ def download(filename):
     except KeyError:
         abort(500)
 
+
 @app.route("/", methods=["GET", "POST"])
 @login_required
 def home():
     if request.method == "POST":
-        try: 
+        try:
             file = request.files["file"]
         except KeyError:
             flash("No file part")
-            socketio.emit('upload-fail')
-            return redirect(url_for("home"), 303)
-        
-        if not allowed_ext(file.filename):
-            flash('Disallowed file extension')
-            socketio.emit('upload-fail')
+            socketio.emit("upload-fail")
             return redirect(url_for("home"), 303)
 
-        if file.filename == '':
-            flash("No selected file")
-            socketio.emit('upload-fail')
+        if not allowed_ext(file.filename):
+            flash("Disallowed file extension")
+            socketio.emit("upload-fail")
             return redirect(url_for("home"), 303)
-        
+
+        if file.filename == "":
+            flash("No selected file")
+            socketio.emit("upload-fail")
+            return redirect(url_for("home"), 303)
+
         if file and allowed_ext(file.filename):
             filename = secure_filename(file.filename)
             if len(filename) > 120:
                 flash("File name too long")
-                socketio.emit('upload-fail')
+                socketio.emit("upload-fail")
                 return redirect(url_for("home"), 303)
-            if File.in_database(filename,session["id"]):
+            if File.in_database(filename, session["id"]):
                 new_name = filename
-                while File.in_database(new_name,session["id"]):
+                while File.in_database(new_name, session["id"]):
                     split_fname = new_name.split(".")
                     new_name = split_fname[0] + "(copy)." + split_fname[1]
                 if len(filename) > 120:
                     flash("File name too long")
-                    socketio.emit('upload-fail')
+                    socketio.emit("upload-fail")
                     return redirect(url_for("home"), 303)
                 filename = new_name
             chunk_size = 1024
-            total_size = int(request.headers['Content-Length'])
+            total_size = int(request.headers["Content-Length"])
             uploaded_size = 0
-            path = os.path.join(app.config['UPLOAD_FOLDER'],session['id'], filename)
+            path = os.path.join(app.config["UPLOAD_FOLDER"], session["id"], filename)
             last_update_time = time.time()
-            with open(path, 'wb') as f:
+            with open(path, "wb") as f:
                 while True:
                     chunk = file.read(chunk_size)
                     if not chunk:
@@ -99,11 +116,16 @@ def home():
                     uploaded_size += len(chunk)
                     current_time = time.time()
                     if current_time - last_update_time >= 0.25:
-                        socketio.emit('upload-progress', {'uploaded':uploaded_size,'total':total_size})
+                        socketio.emit(
+                            "upload-progress",
+                            {"uploaded": uploaded_size, "total": total_size},
+                        )
                         last_update_time = current_time
                     f.write(chunk)
-            socketio.emit('upload-progress', {'uploaded':total_size,'total':total_size})
-            socketio.emit('upload-done')
+            socketio.emit(
+                "upload-progress", {"uploaded": total_size, "total": total_size}
+            )
+            socketio.emit("upload-done")
 
             if not os.path.isfile(path):
                 flash("Error uploading the file")
@@ -113,16 +135,18 @@ def home():
             db.session.commit()
             flash("File uploaded successfully")
             return redirect(url_for("home"), 303)
-    
+
     data = File.query.filter(File.user_id == session["id"]).all()
     f_list = [d.file_name for d in data]
     return render_template("index.html", username=session["name"], files=f_list)
+
 
 @app.route("/login")
 def login():
     google = oauth.create_client("google")
     redirect_uri = url_for("authorize", _external=True)
     return google.authorize_redirect(redirect_uri)
+
 
 @app.route("/authorize")
 def authorize():
@@ -140,11 +164,13 @@ def authorize():
         os.mkdir(os.path.join(app.config["UPLOAD_FOLDER"], user_info["id"]))
     return redirect("/")
 
+
 @login_required
 @app.route("/logout")
 def logout():
     session.clear()
-    return redirect('/')
+    return redirect("/")
+
 
 if __name__ == "__main__":
     if not os.path.isdir(app.config["UPLOAD_FOLDER"]):
