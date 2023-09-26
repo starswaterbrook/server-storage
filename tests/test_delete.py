@@ -4,7 +4,7 @@ import shutil
 
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, parent_dir)
-from mock_client_setup import client, UPLOAD_DIR, TEST_FILE_NAME
+from tests.conftest import client, UPLOAD_DIR, TEST_FILE_NAME
 
 
 def test_delete(client):
@@ -12,8 +12,9 @@ def test_delete(client):
         user_id = session["id"]
         with open(f"{UPLOAD_DIR}/{user_id}/{TEST_FILE_NAME}", "w") as file:
             file.write("Test")
-        response = client.post(f"/delete/{TEST_FILE_NAME}")
 
+    response = client.post(f"/delete/{TEST_FILE_NAME}")
+    response.close()
     file_exists = os.path.isfile(f"{UPLOAD_DIR}/{user_id}/{TEST_FILE_NAME}")
 
     shutil.rmtree(f"{UPLOAD_DIR}/{user_id}")

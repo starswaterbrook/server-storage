@@ -1,6 +1,7 @@
 import pytest
 import os
 import sys
+import shutil
 
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -18,6 +19,10 @@ TEST_FILE_DIR = f"{UPLOAD_DIR}/{TEST_FILE_NAME}"
 
 @pytest.fixture
 def client():
+    if not os.path.isdir(UPLOAD_DIR):
+        os.mkdir(UPLOAD_DIR)
+        with open(TEST_FILE_DIR, "w") as file:
+            file.write("Test")
     app.config["TESTING"] = True
     app.config["UPLOAD_FOLDER"] = UPLOAD_DIR
     app.config["SESSION_COOKIE_NAME"] = "google-login-session"
@@ -41,3 +46,7 @@ def client():
             session["name"] = "test"
 
         yield client
+
+
+def pytest_sessionfinish(session, exitstatus):
+    shutil.rmtree(UPLOAD_DIR)

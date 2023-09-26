@@ -29,6 +29,50 @@ db.init_app(app)
 oauth.init_app(app)
 
 
+def save_file(request, path, file, filename):
+    chunk_size = 1024
+    total_size = int(request.headers["Content-Length"])
+    uploaded_size = 0
+    last_update_time = time.time()
+    with open(path, "wb") as f:
+        while True:
+            chunk = file.read(chunk_size)
+            if not chunk:
+                break
+            uploaded_size += len(chunk)
+            current_time = time.time()
+            if current_time - last_update_time >= 0.25:
+                socketio.emit(
+                    "upload-progress",
+                    {"uploaded": uploaded_size, "total": total_size},
+                )
+                last_update_time = current_time
+            f.write(chunk)
+    socketio.emit("upload-progress", {"uploaded": total_size, "total": total_size})
+    if not os.path.isfile(path):
+        return False
+    file_record = File(filename, session["id"])
+    db.session.add(file_record)
+    db.session.commit()
+    return True
+
+
+def check_file(request):
+    msg = ""
+    try:
+        file = request.files["file"]
+    except KeyError:
+        msg = "No file part"
+    filename = secure_filename(file.filename)
+    if len(filename) > 120:
+        msg = "File name too long"
+    if not allowed_ext(filename):
+        msg = "Disallowed file extension"
+    if filename == "":
+        msg = "No selected file"
+    return file, msg
+
+
 @app.route("/delete/<filename>", methods=["POST"])
 @login_required
 def delete(filename):
@@ -70,71 +114,33 @@ def download(filename):
 @login_required
 def home():
     if request.method == "POST":
-        try:
-            file = request.files["file"]
-        except KeyError:
-            flash("No file part")
+        file, message = check_file(request)
+        if message:
+            flash(message)
             socketio.emit("upload-fail")
             return redirect(url_for("home"), 303)
 
-        if not allowed_ext(file.filename):
-            flash("Disallowed file extension")
-            socketio.emit("upload-fail")
-            return redirect(url_for("home"), 303)
-
-        if file.filename == "":
-            flash("No selected file")
-            socketio.emit("upload-fail")
-            return redirect(url_for("home"), 303)
-
-        if file and allowed_ext(file.filename):
-            filename = secure_filename(file.filename)
+        filename = secure_filename(file.filename)
+        if File.in_database(filename, session["id"]):
+            new_name = filename
+            while File.in_database(new_name, session["id"]):
+                split_fname = new_name.split(".")
+                new_name = split_fname[0] + "(copy)." + split_fname[1]
             if len(filename) > 120:
                 flash("File name too long")
                 socketio.emit("upload-fail")
                 return redirect(url_for("home"), 303)
-            if File.in_database(filename, session["id"]):
-                new_name = filename
-                while File.in_database(new_name, session["id"]):
-                    split_fname = new_name.split(".")
-                    new_name = split_fname[0] + "(copy)." + split_fname[1]
-                if len(filename) > 120:
-                    flash("File name too long")
-                    socketio.emit("upload-fail")
-                    return redirect(url_for("home"), 303)
-                filename = new_name
-            chunk_size = 1024
-            total_size = int(request.headers["Content-Length"])
-            uploaded_size = 0
-            path = os.path.join(app.config["UPLOAD_FOLDER"], session["id"], filename)
-            last_update_time = time.time()
-            with open(path, "wb") as f:
-                while True:
-                    chunk = file.read(chunk_size)
-                    if not chunk:
-                        break
-                    uploaded_size += len(chunk)
-                    current_time = time.time()
-                    if current_time - last_update_time >= 0.25:
-                        socketio.emit(
-                            "upload-progress",
-                            {"uploaded": uploaded_size, "total": total_size},
-                        )
-                        last_update_time = current_time
-                    f.write(chunk)
-            socketio.emit(
-                "upload-progress", {"uploaded": total_size, "total": total_size}
-            )
-            socketio.emit("upload-done")
+            filename = new_name
+        path = os.path.join(app.config["UPLOAD_FOLDER"], session["id"], filename)
+        successful = save_file(request, path, file, filename)
 
-            if not os.path.isfile(path):
-                flash("Error uploading the file")
-                return redirect(url_for("home"), 303)
-            file_record = File(filename, session["id"])
-            db.session.add(file_record)
-            db.session.commit()
+        if not successful:
+            flash("Error uploading the file")
+            socketio.emit("upload-fail")
+        else:
             flash("File uploaded successfully")
-            return redirect(url_for("home"), 303)
+            socketio.emit("upload-done")
+        return redirect(url_for("home"), 303)  # should this redirect still be used?
 
     data = File.query.filter(File.user_id == session["id"]).all()
     f_list = [d.file_name for d in data]

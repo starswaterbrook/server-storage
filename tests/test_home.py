@@ -5,7 +5,7 @@ import shutil
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, parent_dir)
 from app import app, File
-from mock_client_setup import client, UPLOAD_DIR
+from tests.conftest import client, UPLOAD_DIR
 
 
 def test_home(client):
@@ -17,7 +17,7 @@ def test_home(client):
 
     f_list = [d.file_name for d in filedata]
     response = client.get("/")
-
+    response.close()
     shutil.rmtree(f"{UPLOAD_DIR}/{user_id}")
 
     assert name.encode("utf-8") in response.data

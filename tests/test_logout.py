@@ -4,13 +4,14 @@ import shutil
 
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, parent_dir)
-from mock_client_setup import client, UPLOAD_DIR
+from tests.conftest import client, UPLOAD_DIR
 
 
 def test_logout(client):
     with client.session_transaction() as session:
         user_id = session["id"]
     response = client.get("/logout")
+    response.close()
     with client.session_transaction() as session:
         id_cleared = not session.get("id")
         name_cleared = not session.get("name")
