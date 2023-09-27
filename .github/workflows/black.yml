@@ -2,7 +2,7 @@ name: Formatting check with black
 on:
   push:
     branches:
-      - tests
+      - main
 
 jobs:
   build:
